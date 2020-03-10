@@ -1,0 +1,64 @@
+version: "2.2"
+services:
+  # db:
+  #   image: postgres:10
+  #   restart: always
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  elk:
+    build:
+      context: .
+      dockerfile: ./elk/Dockerfile
+    container_name: elk
+    environment:
+      - node.name=elk
+      - discovery.seed_hosts=elk
+      - cluster.initial_master_nodes=elk
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - ES_CONNECT_RETRY=50
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - "5601:5601"
+      - "9200:9200"
+      - "5044:5044"
+  # elasticsearch:
+  #   build:
+  #     context: .
+  #     dockerfile: ./ES/Dockerfile
+  #   container_name: elasticsearch
+  #   environment:
+  #     - node.name=elasticsearch
+  #     - discovery.seed_hosts=elasticsearch
+  #     - cluster.initial_master_nodes=elasticsearch
+  #     - cluster.name=docker-cluster
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - esdata1:/usr/share/elasticsearch/data
+  #   ports:
+  #     - 9200:9200
+  #
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.1.1
+  #   container_name: kibana
+  #   environment:
+  #     ELASTICSEARCH_URL: "http://elasticsearch:9200"
+  #   ports:
+  #     - 5601:5601
+  #   depends_on:
+  #     - elasticsearch
+volumes:
+  esdata1:
+    driver: local
